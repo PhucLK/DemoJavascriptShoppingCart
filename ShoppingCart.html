@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Shopping Cart</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<script type="text/javascript" src="ShoppingCart.js"></script>
+<body>
+	<h1>Shopping Cart</h1>
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-4">
+				<form id="form1">
+					<h2>Apple</h2>
+					<input type="hidden" data-id="AppleName" value="Apple">
+					<input type="hidden" data-id="ApplePrice" value="2.3">
+					<input type="hidden" data-id="AppleCount" value="1">
+					<input type="submit" value="Add" class="btn btn-primary">
+				</form>
+			</div>
+			<div class="col-lg-4">
+				<form id="form2" >
+					<h2>Pear</h2>
+					<input type="hidden" data-id="PearName" value="Pear">
+					<input type="hidden" data-id="PearPrice" value="1.3">
+					<input type="hidden" data-id="PearCount" value="1">
+					<input type="submit" value="Add" class="btn btn-primary">
+				</form>
+			</div>
+			<div class="col-lg-4">
+				<form id="form3">
+					<h2>Banana</h2>
+					<input type="hidden" data-id="BananaName" value="Banana">
+					<input type="hidden" data-id="BananaPrice" value="4.3">
+					<input type="hidden" data-id="BananaCount" value="1">
+					<input type="submit" value="Add" class="btn btn-primary">
+				</form>
+			</div>
+	</div>
+	<div class="container">
+		<button id="removeAll" class="btn btn-danger">Clear Cart</button>
+	</div>
+	<div class="container">
+		<div class="row">
+			<h1>Your Cart</h1>
+			<div id="show-cart" class="col-lg-4"></div>
+			<div >Total Cart : $<span id="total-cart"></span></div>
+		</div>
+
+	</div>
+	<script type="text/javascript">
+
+		let cart = [];
+
+		let Item = function (name, price, count){
+			this.name = name;
+			this.price = price;
+			this.count = count;
+		};
+
+
+		$(document).ready(function(){
+			//event.preventDefault();
+			$("#form1").submit(function(){
+				let name = $('input[data-id=AppleName]').val();
+				let price = Number($('input[data-id=ApplePrice]').val());
+				let count = Number($('input[data-id=AppleCount]').val());
+				addItemToCart(name, price, count);
+				showCart();
+				console.log(loadCart());
+			});
+			$("#form2").submit(function(){
+				let name = $('input[data-id=PearName]').val();
+				let price = Number($('input[data-id=PearPrice]').val());
+				let count = Number($('input[data-id=PearCount]').val());
+				addItemToCart(name, price, count);
+				showCart();
+				console.log(loadCart());
+			});
+			$("#form3").submit(function(){
+				let name = $('input[data-id=BananaName]').val();
+				let price = Number($('input[data-id=BananaPrice]').val());
+				let count = Number($('input[data-id=BananaCount]').val());
+				addItemToCart(name, price, count);
+				showCart();
+				console.log(loadCart());
+			});
+
+			$("#removeAll").click(function(){
+				//event.preventDefault();
+				console.log("removeAll")
+				clearCart();
+				showCart();
+			});
+
+			$("#show-cart").on("click","#remove",function(event){
+				event.preventDefault();
+				console.log("remove")
+				let name = $(this).attr("data-name");
+				console.log(name);
+				removeItemFromCartAll(name);
+				showCart();
+			});
+
+			$("#show-cart").on("click","#subtract",function(event){
+				event.preventDefault();
+				let name = $(this).attr("data-name");
+				removeItemFromCart(name);
+				showCart();
+			});
+
+			$("#show-cart").on("click","#plus",function(event){
+				event.preventDefault();
+				let name = $(this).attr("data-name");
+				plusItemToCart(name);
+				showCart();
+			});
+		});
+
+		
+		//show cart
+		function showCart(){
+			let showCart = loadCart();
+			let output = "";
+			for(let i in showCart){
+				//document.getElementById("demo").innerHTML 
+				output += "<p>"
+				+showCart[i].name+ "  $" 
+				+showCart[i].price + " Quantity :"
+				+"<button id='subtract' data-name='"
+				+showCart[i].name +"'>-</button>"
+				+showCart[i].count 
+				+"<button id='plus' data-name='"
+				+showCart[i].name +"'>+</button>"
+				+"<button id=\"remove\" class=\"btn btn-danger\" data-name='"+
+				showCart[i].name+
+				"' >X</button>"
+				 "</p> ";
+			}
+			$("#show-cart").html(output);
+			//total-cart
+			let total = totalPrice();
+			$("#total-cart").html(total);
+		}
+
+		//add to cart
+		function addItemToCart(name, price, count){
+			//let cart = loadCart();
+			for(let i in cart){
+				if(cart[i].name === name){
+					cart[i].count += count;
+					saveCart();
+					return;
+				}
+			}
+
+			let item = new Item(name, price , count);
+			cart.push(item);
+			saveCart();
+		}
+
+		function plusItemToCart(name){
+			for(let i in cart){
+				if(cart[i].name === name){
+					cart[i].count += 1;
+					saveCart();
+					return;
+				}
+			}
+		}
+
+
+		//remove from cart
+		function removeItemFromCart(name){
+			for(let i in cart){
+				if(cart[i].name === name){
+					cart[i].count --;
+					if(cart[i].count === 0){
+						cart.splice(i,1);
+					}
+					break;
+				}
+			}
+			saveCart();
+		}
+
+
+		//remove from cart all
+		function removeItemFromCartAll(name){
+			for(let i in cart){
+				if(cart[i].name === name){
+					cart.splice(i,1);
+					break;
+				}
+			}
+			saveCart();
+		}
+
+
+
+		//clear all item on cart
+		function clearCart(){
+			//var cart = loadCart();
+			cart = [];
+			saveCart();
+		}
+
+
+
+		//count cart
+		function countCart(){
+			let totalCount = 0;
+			for(let i in cart){
+				totalCount += cart[i].count;
+			}
+			return totalCount;
+		}
+
+
+		//total price
+		function totalPrice(){
+			//let cart = loadCart();
+			let totalPrice = 0;
+			for(let i in cart){
+				totalPrice += cart[i].price*cart[i].count;
+			}
+			return totalPrice.toFixed(2);
+		}
+
+
+		//copy cart to new array
+		function listCart(){
+			let cartCopy = [];
+			for(let i in cart){
+				let itemCopy = cart[i];
+				cartCopy.push(itemCopy);
+			}
+			return cartCopy;
+		}
+
+
+		//save cart -> save to local
+		function saveCart(){
+			localStorage.setItem("ShoppingCart", JSON.stringify(cart));
+		}
+
+		//load cart -> load cart from local
+		function loadCart(){
+			cart = JSON.parse(localStorage.getItem("ShoppingCart"));
+			return cart;
+		}
+
+
+	</script>
+</body>
+</html>
